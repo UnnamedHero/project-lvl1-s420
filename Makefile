@@ -9,4 +9,7 @@ run:
 
 build-run: build run
 
+test:
+	./mvnw surefire:test
+
 .DEFAULT_GOAL := build-run
