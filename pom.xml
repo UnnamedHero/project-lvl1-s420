@@ -15,7 +15,7 @@
         <!--Project settings-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>8</java.version>
+        <java.version>10</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
@@ -101,6 +101,8 @@
             <artifactId>commons-math3</artifactId>
             <version>${commons-math3.version}</version>
         </dependency>
+
+
 
     </dependencies>
 
