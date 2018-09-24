@@ -1,13 +1,23 @@
-clear:
-	rm -rf ./target/classes
+clean:
+	./mvnw clean
 
-compile: clear
-	mkdir -p ./target/classes
-	javac -d ./target/classes ./src/main/java/games/Slot.java
+build: clean
+	./mvnw package
 
 run:
-	java -cp ./target/classes games.Slot
+	java -jar ./target/project-lvl1-s420-1.0-SNAPSHOT-jar-with-dependencies.jar
 
-compile-run: compile run
+build-run: build run
 
-.DEFAULT_GOAL := compile-run
+test:
+	./mvnw surefire:test
+
+update-libs:
+	./mvnw versions:update-properties
+
+update-plugins:
+	./mvnw versions:display-plugin-updates
+
+update: update-libs update-plugins
+
+.DEFAULT_GOAL := build-run
