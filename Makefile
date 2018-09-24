@@ -6,10 +6,10 @@ compile: clear
 	javac -d ./target/classes ./src/main/java/games/Slot.java
 
 build: compile
-	jar cf ./target/casino.jar -C ./target/classes .
+	jar cfe ./target/casino.jar games.Slot -C ./target/classes .
 
 run:
-	java -cp ./target/casino.jar games.Slot
+	java -jar ./target/casino.jar
 
 build-run: build run
 
