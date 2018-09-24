@@ -1,15 +1,11 @@
-clear:
-	rm -rf ./target/classes
+clean:
+	./mvnw clean
 
-compile: clear
-	mkdir -p ./target/classes
-	javac -d ./target/classes ./src/main/java/games/Slot.java
-
-build: compile
-	jar cfe ./target/casino.jar games.Slot -C ./target/classes .
+build: clean
+	./mvnw package
 
 run:
-	java -jar ./target/casino.jar
+	java -jar ./target/project-lvl1-s420-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 build-run: build run
 
