@@ -119,7 +119,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>games.Slot</mainClass>
+                            <mainClass>games.Choice</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -212,6 +212,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.10.0</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
