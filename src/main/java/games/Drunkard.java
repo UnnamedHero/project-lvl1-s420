@@ -25,11 +25,6 @@ public class Drunkard {
         ACE // Туз
     }
 
-//    enum Players {
-//        PLAYER_1,
-//        PLAYER_2,
-//    }
-
     private int playersCount;
     private int rounds;
 
@@ -37,20 +32,26 @@ public class Drunkard {
 
     private static final int CARDS_TOTAL_COUNT = PARS_TOTAL_COUNT * Suit.values().length;
 
-    private static int[] playersCardsBeginCursor;
-    private static int[] playersCardsEndCursor;
+    private int[] playersCardsBeginCursor;
+    private int[] playersCardsEndCursor;
+    private int[] playersCardsCount;
 
-    private static int[][] playersPacks;
+    private int[][] playersPacks;
 
-    public Drunkard(int players, int maxRounds) {
+    /**
+     * @param players players count
+     * @param maxRounds max rounds to play
+     */
+    public Drunkard(final int players, final int maxRounds) {
         this.playersCount = players;
         this.rounds = maxRounds;
         this.playersCardsBeginCursor = new int[players];
         this.playersCardsEndCursor = new int[players];
+        this.playersCardsCount = new int[players];
         this.playersPacks = new int[players][CARDS_TOTAL_COUNT];
     }
 
-    private static int comparePars(Par card1, Par card2) {
+    private static int comparePars(final Par card1, final Par card2) {
         if (card1 == Par.SIX && card2 == Par.ACE) {
             return 1;
         }
@@ -58,7 +59,6 @@ public class Drunkard {
         if (card1 == Par.ACE && card2 == Par.SIX) {
             return -1;
         }
-        System.out.printf("\n%d vs %d is %d \n", card1.ordinal(), card2.ordinal(), Integer.compare(card1.ordinal(), card2.ordinal()));
         return Integer.compare(card1.ordinal(), card2.ordinal());
     }
 
@@ -66,11 +66,11 @@ public class Drunkard {
         return Suit.values()[cardNumber / PARS_TOTAL_COUNT];
     }
 
-    private static Par getPar(int cardNumber) {
+    private static Par getPar(final int cardNumber) {
         return Par.values()[cardNumber % PARS_TOTAL_COUNT];
     }
 
-    private static String toString(int cardNumber) {
+    private static String toString(final int cardNumber) {
         return getPar(cardNumber) + " " + getSuit(cardNumber);
     }
 
@@ -80,8 +80,16 @@ public class Drunkard {
         return pack;
     }
 
-    private int getNextPlayerId(int currentPlayerId) {
+    private int getNextPlayerId(final int currentPlayerId) {
         return (currentPlayerId + 1) % playersCount;
+    }
+
+    private void increasePlayerCardsCount(final int playerId) {
+        playersCardsCount[playerId] = playersCardsCount[playerId] + 1;
+    }
+
+    private void degreasePlayerCardsCount(final int playerId) {
+        playersCardsCount[playerId] = playersCardsCount[playerId] - 1;
     }
 
     private void handOutPack() {
@@ -95,52 +103,49 @@ public class Drunkard {
         for (int i = 0; i < CARDS_TOTAL_COUNT; i++) {
             int currentIndex = i / playersCount;
             playersPacks[currentPlayerId][currentIndex] = pack[i];
+            increasePlayerCardsCount(currentPlayerId);
             playersCardsEndCursor[currentPlayerId] = currentIndex;
             currentPlayerId = getNextPlayerId(currentPlayerId);
         }
     }
 
-    private int getPlayerCardsCount(int playerId) {
-        final int playerBeginCursor = playersCardsBeginCursor[playerId];
-        final int playerEndCursor = playersCardsEndCursor[playerId];
-        if (playerEndCursor <= playerBeginCursor) {
-            return playerEndCursor - playerBeginCursor + 1;
-        }
-        return playerEndCursor + CARDS_TOTAL_COUNT - playerBeginCursor + 1;
+    private int getPlayerCardsCount(final int playerId) {
+        return playersCardsCount[playerId];
     }
 
-    private static int compareCards(int[] cards) {
+    private static int compareCards(final int[] cards) {
         int strongestCardIndex = 0;
-        boolean isTie = false;
-        for(int i = 1; i < cards.length; i++) {
+        int tieCount = 0;
+        final int maxTieCount = cards.length - 1;
+        for (int i = 1; i < cards.length; i++) {
             final Par strongest = getPar(cards[strongestCardIndex]);
             final Par current = getPar(cards[i]);
-            System.out.printf("%s vs %s", toString(cards[strongestCardIndex]), toString(cards[i]));
             switch (comparePars(current, strongest)) {
-                case -1: isTie = false; break;
-                case 0: isTie = true; break;
-                case 1: strongestCardIndex = i; isTie = false; break;
+                case -1: break;
+                case 0: tieCount = tieCount + 1; break;
+                case 1: strongestCardIndex = i; break;
+                default: break;
             }
         }
-        System.out.printf(" strongest: %s\n", toString(cards[strongestCardIndex]));
-        return isTie ? -1 : strongestCardIndex;
+        return tieCount == maxTieCount ? -1 : strongestCardIndex;
     }
 
-    private static int getNewCursorPosition(int currentCursorPosition) {
+    private static int getNewCursorPosition(final int currentCursorPosition) {
         return (currentCursorPosition + 1) % CARDS_TOTAL_COUNT;
     }
 
-    private void addCardsToPlayer(int playerId, int... cards) {
+    private void addCardsToPlayer(final int playerId, final int... cards) {
         int newEndCursorPosition = playersCardsEndCursor[playerId];
         for (int card: cards) {
             newEndCursorPosition = getNewCursorPosition(newEndCursorPosition);
             playersPacks[playerId][newEndCursorPosition] = card;
+            increasePlayerCardsCount(playerId);
         }
         playersCardsEndCursor[playerId] = newEndCursorPosition;
     }
 
 
-    private int[] shiftFirstCards(int[] playersInGame) {
+    private int[] shiftFirstCards(final int[] playersInGame) {
         final int playersInGameCount = playersInGame.length;
         int[] firstCards = new int[playersInGameCount];
         for (int i = 0; i < playersInGameCount; i++) {
@@ -148,11 +153,12 @@ public class Drunkard {
             final int currentPlayerFirstCardPos = playersCardsBeginCursor[currentPlayerId];
             firstCards[i] = playersPacks[i][currentPlayerFirstCardPos];
             playersCardsBeginCursor[currentPlayerId] = getNewCursorPosition(currentPlayerFirstCardPos);
+            degreasePlayerCardsCount(currentPlayerId);
         }
         return firstCards;
     }
 
-    private static int[] rotatePlayers(int[] playersInGame) {
+    private static int[] rotatePlayers(final int[] playersInGame) {
         final int playersCount = playersInGame.length;
         int[] shiftedPlayersInGame = new int[playersCount];
         System.arraycopy(playersInGame, 1, shiftedPlayersInGame, 0, playersCount - 1);
@@ -160,42 +166,42 @@ public class Drunkard {
         return shiftedPlayersInGame;
     }
 
-    private void processTieResult(int[] playersInGame, int[] cards) {
+    private void processTieResult(final int[] playersInGame, final int[] cards) {
         for (int i = 0; i < playersInGame.length; i++) {
             addCardsToPlayer(playersInGame[i], cards[i]);
         }
     }
 
-    private void playRound(int[] playersInGame, int currentRound) {
+    private int playRound(final int[] playersInGame, final int currentRound) {
 
         if (currentRound == this.rounds) {
-            return;
+            return 0;
         }
 
-        final int playersCount = playersInGame.length;
-        if (playersCount == 1) {
-            return;
+        final int roundPlayersCount = playersInGame.length;
+        if (roundPlayersCount == 1) {
+            return 0;
         }
 
         System.out.println(String.format("Раунд %d", currentRound + 1));
 
         int[] firstCards = shiftFirstCards(playersInGame);
-        for (int i = 0; i < playersCount; i ++) {
+        for (int i = 0; i < roundPlayersCount; i++) {
             System.out.println(String.format("Игрок %d карта %9s", playersInGame[i] + 1, toString(firstCards[i])));
         }
 
-        final int strongestIndex = compareCards(firstCards);
+        final int winPlayerIndex = compareCards(firstCards);
 
-        if (strongestIndex == -1) {
+        if (winPlayerIndex == -1) {
             System.out.println("Спор - каждый остаётся при своих!");
             processTieResult(playersInGame, firstCards);
         } else {
-            System.out.println(String.format("Выиграл игрок %d", playersInGame[strongestIndex] + 1));
-            addCardsToPlayer(playersInGame[strongestIndex], firstCards);
+            System.out.println(String.format("Выиграл игрок %d", playersInGame[winPlayerIndex] + 1));
+            addCardsToPlayer(playersInGame[winPlayerIndex], firstCards);
         }
 
-        final int[] sortedPlayers = new int[playersCount];
-        System.arraycopy(playersInGame, 0, sortedPlayers, 0, playersCount);
+        final int[] sortedPlayers = new int[roundPlayersCount];
+        System.arraycopy(playersInGame, 0, sortedPlayers, 0, roundPlayersCount);
         Arrays.sort(sortedPlayers);
 
         for (int playerId: sortedPlayers) {
@@ -208,9 +214,12 @@ public class Drunkard {
                 .filter(playerId -> getPlayerCardsCount(playerId) > 0)
                 .toArray();
 
-        playRound(nextRoundPlayers, currentRound + 1);
+        return playRound(nextRoundPlayers, currentRound + 1);
     }
 
+    /**
+     *  call this method to start game.
+     */
     public void play() {
         handOutPack();
         System.out.printf("cards count %d %d \n", getPlayerCardsCount(0), getPlayerCardsCount(1));
@@ -219,7 +228,7 @@ public class Drunkard {
     }
 
     public static void main(final String... __) {
-        Drunkard game = new Drunkard(3, 1000);
+        Drunkard game = new Drunkard(2, 9999);
         game.play();
     }
 }
