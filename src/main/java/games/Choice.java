@@ -15,10 +15,11 @@ public class Choice {
  }
 
     public static void main(final String... __) throws IOException {
-        System.out.println("Выберите игру\n1 - \'Однорукий бандит\'\n2 - \'Пьяница\'");
+        System.out.println("Выберите игру\n1 - \'Однорукий бандит\'\n2 - \'Пьяница\'\n3 - \'Очко\'");
         switch (getCharacterFromUser()) {
             case '1': Slot.main(); break;
             case '2': Drunkard.main(); break;
+            case '3': BlackJack.main(); break;
             default:
                 System.out.println("Игры с таким номером нет");
         }
