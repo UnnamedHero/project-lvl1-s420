@@ -6,7 +6,7 @@ import java.util.Random;
 /**
  *  Very simple slot machine.
  */
-public class Slot {
+public class Slot implements ICasinoGame {
 
     /**
      * default reel max number (not included).
@@ -56,6 +56,11 @@ public class Slot {
     public Slot(final int initCash, final int rounds) {
         this.startCash = initCash;
         this.maxRounds = rounds;
+    }
+
+    public Slot(final int rounds) {
+        this.maxRounds = rounds;
+        this.startCash = 0;
     }
 
     /**
@@ -119,9 +124,16 @@ public class Slot {
     /**
      *  Start a game calling this method.
      */
-    public void play() {
+    public int play() {
         final int[] initReelsState = {0, 0, 0};
-        playSlotRound(0, initReelsState, this.startCash);
+        return playSlotRound(0, initReelsState, this.startCash);
+    }
+
+    @Override
+    public int playSingleRound(final int cash) {
+        this.startCash = cash;
+        this.maxRounds = 1;
+        return play();
     }
 
     /**
