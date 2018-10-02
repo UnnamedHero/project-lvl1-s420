@@ -222,7 +222,6 @@ public class Drunkard {
      */
     public void play() {
         handOutPack();
-        System.out.printf("cards count %d %d \n", getPlayerCardsCount(0), getPlayerCardsCount(1));
         int[] playersInGame = IntStream.rangeClosed(0, playersCount - 1).toArray();
         playRound(playersInGame, 0);
     }
