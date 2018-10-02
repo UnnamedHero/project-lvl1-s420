@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.util.MathArrays;
 
-//import static games.CardUtils.*;
-
 public class Drunkard implements ICasinoGame {
 
     private int playersCount;
