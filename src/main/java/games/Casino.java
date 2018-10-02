@@ -1,6 +1,5 @@
 package games;
 
-import javax.imageio.IIOException;
 import java.io.IOException;
 
 public class Casino {
