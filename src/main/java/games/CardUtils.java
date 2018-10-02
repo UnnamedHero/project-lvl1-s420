@@ -1,5 +1,9 @@
 package games;
 
+import org.apache.commons.math3.util.MathArrays;
+
+import java.util.stream.IntStream;
+
 public class CardUtils {
     enum Suit {
         SPADES, // пики
@@ -34,5 +38,11 @@ public class CardUtils {
 
     public static String toString(final int cardNumber) {
         return getPar(cardNumber) + " " + getSuit(cardNumber);
+    }
+
+    public static int[] makePack() {
+        int[] pack = IntStream.rangeClosed(0, CardUtils.CARDS_TOTAL_COUNT - 1).toArray();
+        MathArrays.shuffle(pack);
+        return pack;
     }
 }

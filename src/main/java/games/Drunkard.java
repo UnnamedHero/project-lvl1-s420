@@ -42,14 +42,6 @@ public class Drunkard {
         return Integer.compare(card1.ordinal(), card2.ordinal());
     }
 
-
-
-    private static int[] makePack() {
-        int[] pack = IntStream.rangeClosed(0, CardUtils.CARDS_TOTAL_COUNT - 1).toArray();
-        MathArrays.shuffle(pack);
-        return pack;
-    }
-
     private int getNextPlayerId(final int currentPlayerId) {
         return (currentPlayerId + 1) % playersCount;
     }
@@ -63,7 +55,7 @@ public class Drunkard {
     }
 
     private void handOutPack() {
-        final int[] pack = makePack();
+        final int[] pack = CardUtils.makePack();
         int currentPlayerId = 0;
 
         for (int playerId = 0; playerId < playersCount; playerId++) {
@@ -151,7 +143,7 @@ public class Drunkard {
 
         final int roundPlayersCount = playersInGame.length;
         if (roundPlayersCount == 1) {
-            System.out.printf("На %d раунде победил игрок %d!%n", currentRound, playersInGame[0]);
+            System.out.printf("На %d раунде победил игрок %d!%n", currentRound, playersInGame[0] + 1);
             return currentRound;
         }
 
