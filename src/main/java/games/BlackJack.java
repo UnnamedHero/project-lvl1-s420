@@ -3,7 +3,7 @@ package games;
 import java.io.IOException;
 import java.util.Random;
 
-public class BlackJack {
+public class BlackJack implements ICasinoGame {
 
     private static int[] pack;
     private static int packCursor;
@@ -139,19 +139,17 @@ public class BlackJack {
 
 
     private int playRound(final int round) throws IOException {
-
         if (round == this.rounds) {
-            System.out.println("Достигнуто максимальное количество раундов. До свидания!");
-            return round;
+            return getPlayerMoney(PLAYER);
         }
         if (getPlayerMoney(PLAYER) == 0) {
             System.out.println("Вы проиграли все деньги. Прощайте.");
-            return round;
+            return 0;
         }
 
         if (getPlayerMoney(COMPUTER) == 0) {
             System.out.println("Вы обыграли компьютер и теперь Вам не с кем играть. Пока!");
-            return round;
+            return getPlayerMoney(PLAYER);
         }
 
         initRound();
@@ -171,33 +169,46 @@ public class BlackJack {
 
         switch (Integer.compare(playerScore, computerScore)) {
             case -1:
-                System.out.printf("Вы проиграли раунд и теряете 10$");
+                System.out.printf("Вы проиграли раунд и теряете 10$%n");
                 take10BucksFrom(PLAYER);
                 add10BuckTo(COMPUTER);
                 break;
             case 1:
-                System.out.printf("Вы выиграли раунд и получаете 10$");
+                System.out.printf("Вы выиграли раунд и получаете 10$%n");
                 take10BucksFrom(COMPUTER);
                 add10BuckTo(PLAYER);
                 break;
             case 0:
             default:
-                System.out.println("Ничья, каждый остаётся при своих");
+                System.out.printf("Ничья, каждый остаётся при своих%n");
                 break;
         }
         return playRound(round + 1);
     }
 
+
+
     /**
      * @throws IOException
      * Запустите этот метод, чтобы начать игру.
      */
-    public void play() throws IOException {
-        playRound(0);
+    public int play() throws IOException {
+        return playRound(0);
     }
 
     public static void main(final String... __) throws IOException {
         final BlackJack game = new BlackJack(100);
         game.play();
+    }
+
+    @Override
+    public int playSingleRound(int cash) {
+        try {
+            playersMoney[PLAYER] = cash;
+            playersMoney[COMPUTER] = 10;
+            return play();
+        } catch (IOException e) {
+            return cash;
+        }
     }
 }

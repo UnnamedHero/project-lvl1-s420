@@ -6,7 +6,7 @@ import org.apache.commons.math3.util.MathArrays;
 
 //import static games.CardUtils.*;
 
-public class Drunkard {
+public class Drunkard implements ICasinoGame {
 
     private int playersCount;
     private int rounds;
@@ -138,13 +138,14 @@ public class Drunkard {
 
         if (currentRound == this.rounds) {
             System.out.printf("Достигнуто максимальное количество раундов %d %n", currentRound);
-            return currentRound;
+            return -1;
         }
 
         final int roundPlayersCount = playersInGame.length;
         if (roundPlayersCount == 1) {
+            final int winnerId = playersInGame[0];
             System.out.printf("На %d раунде победил игрок %d!%n", currentRound, playersInGame[0] + 1);
-            return currentRound;
+            return winnerId;
         }
 
         System.out.println(String.format("Раунд %d", currentRound + 1));
@@ -184,10 +185,20 @@ public class Drunkard {
     /**
      *  call this method to start game.
      */
-    public void play() {
+    public int play() {
         handOutPack();
         int[] playersInGame = IntStream.rangeClosed(0, playersCount - 1).toArray();
-        playRound(playersInGame, 0);
+        return playRound(playersInGame, 0);
+    }
+
+    @Override
+    public int playSingleRound(final int cash) {
+        final int result = play();
+        switch (result) {
+            case -1: return cash;
+            case 0: return cash + 10;
+            default: return cash - 10;
+        }
     }
 
     public static void main(final String... __) {
