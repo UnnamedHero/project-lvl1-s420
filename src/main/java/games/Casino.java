@@ -1,8 +1,13 @@
 package games;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 
 public class Casino {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Casino.class);
+
     private int cash;
 
     public Casino(final int newCash) {
@@ -28,26 +33,26 @@ public class Casino {
     }
 
     public void play() throws IOException {
-        System.out.println("Добро пожаловать в казино \'Последняя надежда\'!");
-        System.out.println("Ваш начальный баланс равен 100$.\n" +
-                "Стандартная ставка в любой игре равна 10$");
+        log.info("Добро пожаловать в казино \'Последняя надежда\'!");
+        log.info("Ваш начальный баланс равен 100$.\n" +
+                "Стандартная ставка в любой игре равна 10$\n");
 
         while(getCash() > 0) {
-            System.out.printf("%nВаш баланс: %d$. " +
-                    "Выберите игру%n" +
-                    "1 - \'Однорукий бандит\'%n" +
-                    "2 - \'Пьяница\' (вы игрок №1) %n" +
-                    "3 - \'Очко\'%n" +
-                    "4 - Покинуть казино%n", getCash());
+            log.info("Ваш баланс: {}$. " +
+                    "Выберите игру\n" +
+                    "1 - \'Однорукий бандит\'\n" +
+                    "2 - \'Пьяница\' (вы игрок №1)\n" +
+                    "3 - \'Очко\'\n" +
+                    "4 - Покинуть казино", getCash());
             final ICasinoGame game = getGame();
             if (game == null) {
-                System.out.printf("Возвращайтесь ещё! Ваш баланс %d$%n", getCash());
+                log.info("Возвращайтесь ещё! Ваш баланс {}$", getCash());
                 return;
             }
             final int newCash = game.playSingleRound(getCash());
             setCash(newCash);
         }
-        System.out.println("Вы всё проиграли. До свидания.");
+        log.info("Вы всё проиграли. До свидания.");
     }
 
     public static void main(String... __) throws IOException {
