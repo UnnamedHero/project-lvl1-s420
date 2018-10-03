@@ -1,23 +1,27 @@
 package games;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.util.Random;
 
 public class BlackJack implements ICasinoGame {
 
-    private static int[] pack;
-    private static int packCursor;
-
-    private static int[][] playersCards;
-    private static int[] playersCursors;
-
-    private static int[] playersMoney = {100, 100};
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(BlackJack.class);
 
     private static final int MAX_VALUE = 21;
     private static final int MAX_CARDS_COUNT = 8;
 
     private static final int PLAYER = 0;
     private static final int COMPUTER = 1;
+
+    private int[] pack;
+    private int packCursor;
+
+    private int[][] playersCards;
+    private int[] playersCursors;
+
+    private int[] playersMoney = {100, 100};
 
     private int rounds;
 
@@ -28,8 +32,8 @@ public class BlackJack implements ICasinoGame {
         this.rounds = maxRounds;
     }
 
-    static boolean confirm(final String message) throws IOException {
-        System.out.println(message + " \"Y\" - Да, {любой другой символ} - нет (Что бы выйти из игры, нажмите Ctrl + C)");
+    private static boolean confirm(final String message) throws IOException {
+        log.info("{} \"Y\" - Да, {любой другой символ} - нет (Что бы выйти из игры, нажмите Ctrl + C)", message);
         switch (Choice.getCharacterFromUser()) {
             case 'Y':
             case 'y': return true;
@@ -49,8 +53,8 @@ public class BlackJack implements ICasinoGame {
         playersCursors[playerId] += 1;
     }
 
-    private static void initRound() {
-        System.out.println("\n\nУ Вас " + playersMoney[0] + "$, у компьютера - " + playersMoney[1] + "$. Начинаем новый раунд!");
+    private void initRound() {
+        log.info("\n\nУ Вас {}$, у компьютера - {}$. Начинаем новый раунд!", playersMoney[0], playersMoney[1]);
         pack = CardUtils.makePack();
         packCursor = 0;
         playersCards = new int[2][MAX_CARDS_COUNT];
@@ -59,7 +63,7 @@ public class BlackJack implements ICasinoGame {
 
     private int getCardFromPack() {
         if (packCursor == CardUtils.CARDS_TOTAL_COUNT) {
-            System.out.println("В колоде не осталось карт. Как вы этого добились?");
+            log.info("В колоде не осталось карт. Как вы этого добились?");
             return -1;
         }
         int card = pack[packCursor];
@@ -70,7 +74,7 @@ public class BlackJack implements ICasinoGame {
     private void addCardToPlayerPack(final int playerId, final int card) {
         final String playerName = playerId == PLAYER ? "Вам" : "Компьютеру";
         final int playersCursor = getPlayerCursor(playerId);
-        System.out.printf("%s выпала карта %s%n", playerName, CardUtils.toString(card));
+        log.info("{} выпала карта {}", playerName, CardUtils.toString(card));
         playersCards[playerId][playersCursor] = card;
         shiftPlayerCursor(playerId);
     }
@@ -120,7 +124,7 @@ public class BlackJack implements ICasinoGame {
         final int safeScore = 14 + r.nextInt(5);
         addCardsToPlayer(COMPUTER, 2);
         while (getPlayerCardsSum(COMPUTER) <= safeScore) {
-            System.out.println("Компьютер решил взять ещё одну карту");
+            log.info("Компьютер решил взять ещё одну карту");
             addCardsToPlayer(COMPUTER, 1);
         }
     }
@@ -143,12 +147,12 @@ public class BlackJack implements ICasinoGame {
             return getPlayerMoney(PLAYER);
         }
         if (getPlayerMoney(PLAYER) == 0) {
-            System.out.println("Вы проиграли все деньги. Прощайте.");
+            log.info("Вы проиграли все деньги. Прощайте.");
             return 0;
         }
 
         if (getPlayerMoney(COMPUTER) == 0) {
-            System.out.println("Вы обыграли компьютер и теперь Вам не с кем играть. Пока!");
+            log.info("Вы обыграли компьютер и теперь Вам не с кем играть. Пока!");
             return getPlayerMoney(PLAYER);
         }
 
@@ -165,22 +169,22 @@ public class BlackJack implements ICasinoGame {
         final int playerScore = getGameScore(PLAYER);
         final int computerScore = getGameScore(COMPUTER);
 
-        System.out.printf("Сумма ваших очков - %d, компьютера - %d%n", playerScore, computerScore);
+        log.info("Сумма ваших очков - {}, компьютера - {}", playerScore, computerScore);
 
         switch (Integer.compare(playerScore, computerScore)) {
             case -1:
-                System.out.printf("Вы проиграли раунд и теряете 10$%n");
+                log.info("Вы проиграли раунд и теряете 10$");
                 take10BucksFrom(PLAYER);
                 add10BuckTo(COMPUTER);
                 break;
             case 1:
-                System.out.printf("Вы выиграли раунд и получаете 10$%n");
+                log.info("Вы выиграли раунд и получаете 10$");
                 take10BucksFrom(COMPUTER);
                 add10BuckTo(PLAYER);
                 break;
             case 0:
             default:
-                System.out.printf("Ничья, каждый остаётся при своих%n");
+                log.info("Ничья, каждый остаётся при своих");
                 break;
         }
         return playRound(round + 1);
