@@ -2,3 +2,4 @@ target
 maven-wrapper.jar
 MavenWrapperDownloader.java
 pom.xml.versionsBackup
+logs

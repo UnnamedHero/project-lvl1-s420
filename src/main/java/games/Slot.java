@@ -1,5 +1,7 @@
 package games;
 
+import org.slf4j.Logger;
+
 import java.util.Arrays;
 import java.util.Random;
 
@@ -8,36 +10,38 @@ import java.util.Random;
  */
 public class Slot implements ICasinoGame {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Slot.class);
+
     /**
      * default reel max number (not included).
      */
-    private final int reelSize = 7;
+    private static final int REEL_SIZE = 7;
 
     /**
-     * max number from 0 to rollPower to add to a obtain new reel value.
+     * max number from 0 to ROLL_POWER to add to a obtain new reel value.
      */
-    private final int rollPower = 100;
+    private static final int ROLL_POWER = 100;
     /**
      * jackpot startCash prize.
      */
-    private final int winDelta = 1000;
+    private static final int WIN_DELTA = 1000;
 
     /**
      * default bet size.
      */
-    private final int looseDelta = -10;
+    private static final int LOOSE_DELTA = -10;
 
     /**
      * static win message.
      */
-    private final String winMessage = String
-            .format("Выигрыш %d$", this.winDelta);
+    private static final String WIN_MESSAGE = String
+            .format("Выигрыш %d$", WIN_DELTA);
 
     /**
      * static loose message.
      */
-    private final String looseMessage = String
-            .format("Проигрыш %d$", Math.abs(this.looseDelta));
+    private static final String LOOSE_MESSAGE = String
+            .format("Проигрыш %d$", Math.abs(LOOSE_DELTA));
 
     /**
      * game player's startCash.
@@ -72,7 +76,7 @@ public class Slot implements ICasinoGame {
         Random r = new Random();
         return Arrays
                 .stream(prevReelsState)
-                .map(reel -> (reel + r.nextInt(this.rollPower)) % this.reelSize)
+                .map(reel -> (reel + r.nextInt(ROLL_POWER)) % REEL_SIZE)
                 .toArray();
     }
 
@@ -101,23 +105,22 @@ public class Slot implements ICasinoGame {
             return cash;
         }
 
-        System.out.println(String.format("У Вас %d$, ставка 10$", cash));
+        log.info("У Вас {}$, ставка 10$", cash);
 
-        System.out.println("Крутим барабаны! Розыгрыш принёс следующие результаты:");
+        log.info("Крутим барабаны! Розыгрыш принёс следующие результаты:");
         final int[] newReelsState = rollReels(reelState);
-        System.out.println(String
-                .format("первый барабан - %d, второй - %d, третий - %d",
+        log.info("первый барабан - {}, второй - {}, третий - {}",
                         newReelsState[0],
                         newReelsState[1],
-                        newReelsState[2]));
+                        newReelsState[2]);
 
         final boolean isPlayerWin = isJackPot(newReelsState);
 
-        final int cashDelta = isPlayerWin ? winDelta : looseDelta;
+        final int cashDelta = isPlayerWin ? WIN_DELTA : LOOSE_DELTA;
         final int newCash = cash + cashDelta;
 
-        final String roundMessage = isPlayerWin ? this.winMessage : this.looseMessage;
-        System.out.println(String.format("%s, Ваш капитал теперь составляет %d$", roundMessage, newCash));
+        final String roundMessage = isPlayerWin ? WIN_MESSAGE : LOOSE_MESSAGE;
+        log.info("{}, Ваш капитал теперь составляет {}$", roundMessage, newCash);
         return playSlotRound(round + 1, newReelsState, newCash);
     }
 

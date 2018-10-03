@@ -2,9 +2,7 @@ package games;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
-import org.apache.commons.math3.util.MathArrays;
-
-//import static games.CardUtils.*;
+import org.slf4j.Logger;
 
 public class Drunkard implements ICasinoGame {
 
@@ -17,11 +15,12 @@ public class Drunkard implements ICasinoGame {
 
     private int[][] playersPacks;
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(Drunkard.class);
+
     /**
      * @param players players count
      * @param maxRounds max rounds to play
      */
-
     public Drunkard(final int players, final int maxRounds) {
         this.playersCount = players;
         this.rounds = maxRounds;
@@ -30,6 +29,7 @@ public class Drunkard implements ICasinoGame {
         this.playersCardsCount = new int[players];
         this.playersPacks = new int[players][CardUtils.CARDS_TOTAL_COUNT];
     }
+
 
     private static int comparePars(final CardUtils.Par card1, final CardUtils.Par card2) {
         if (card1 == CardUtils.Par.SIX && card2 == CardUtils.Par.ACE) {
@@ -137,31 +137,31 @@ public class Drunkard implements ICasinoGame {
     private int playRound(final int[] playersInGame, final int currentRound) {
 
         if (currentRound == this.rounds) {
-            System.out.printf("Достигнуто максимальное количество раундов %d %n", currentRound);
+            log.info("Достигнуто максимальное количество раундов {}\n", currentRound);
             return -1;
         }
 
         final int roundPlayersCount = playersInGame.length;
         if (roundPlayersCount == 1) {
             final int winnerId = playersInGame[0];
-            System.out.printf("На %d раунде победил игрок %d!%n", currentRound, playersInGame[0] + 1);
+            log.info("На {} раунде победил игрок {}!\n", currentRound, playersInGame[0] + 1);
             return winnerId;
         }
 
-        System.out.println(String.format("Раунд %d", currentRound + 1));
+        log.info("Раунд {}", currentRound + 1);
 
         int[] firstCards = shiftFirstCards(playersInGame);
         for (int i = 0; i < roundPlayersCount; i++) {
-            System.out.println(String.format("Игрок %d карта %9s", playersInGame[i] + 1, CardUtils.toString(firstCards[i])));
+            log.info("Игрок {} карта {}", playersInGame[i] + 1, CardUtils.toString(firstCards[i]));
         }
 
         final int winPlayerIndex = compareCards(firstCards);
 
         if (winPlayerIndex == -1) {
-            System.out.println("Спор - каждый остаётся при своих!");
+            log.info("Спор - каждый остаётся при своих!");
             processTieResult(playersInGame, firstCards);
         } else {
-            System.out.println(String.format("Выиграл игрок %d", playersInGame[winPlayerIndex] + 1));
+            log.info("Выиграл игрок {}", playersInGame[winPlayerIndex] + 1);
             addCardsToPlayer(playersInGame[winPlayerIndex], firstCards);
         }
 
@@ -170,10 +170,9 @@ public class Drunkard implements ICasinoGame {
         Arrays.sort(sortedPlayers);
 
         for (int playerId: sortedPlayers) {
-            System.out.print(String.format("У игрока №%d %d карт; ", playerId + 1, getPlayerCardsCount(playerId)));
+            log.info("У игрока №{} {} карт; ", playerId + 1, getPlayerCardsCount(playerId));
         }
 
-        System.out.println("\n");
         int[] rotatedPlayers = rotatePlayers(playersInGame);
         int[] nextRoundPlayers = Arrays.stream(rotatedPlayers)
                 .filter(playerId -> getPlayerCardsCount(playerId) > 0)
