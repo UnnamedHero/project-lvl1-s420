@@ -44,35 +44,11 @@ public class Slot implements ICasinoGame {
             .format("Проигрыш %d$", Math.abs(LOOSE_DELTA));
 
     /**
-     * game player's startCash.
-     */
-    private int startCash;
-
-    /**
-     * game's max rounds.
-     */
-    private int maxRounds;
-
-    /**
-     * @param initCash start player's startCash
-     * @param rounds game's max rounds
-     */
-    public Slot(final int initCash, final int rounds) {
-        this.startCash = initCash;
-        this.maxRounds = rounds;
-    }
-
-    public Slot(final int rounds) {
-        this.maxRounds = rounds;
-        this.startCash = 0;
-    }
-
-    /**
      * Change reels' values.
      * @param prevReelsState previous reels values
      * @return new reels values
      */
-    private int[] rollReels(final int[] prevReelsState) {
+    private static int[] rollReels(final int[] prevReelsState) {
         Random r = new Random();
         return Arrays
                 .stream(prevReelsState)
@@ -86,7 +62,7 @@ public class Slot implements ICasinoGame {
      * @param reelState a reels' values to check
      * @return true or false
      */
-    private boolean isJackPot(final int[] reelState) {
+    private static boolean isJackPot(final int[] reelState) {
         return reelState[0] == reelState[1] &&
                 reelState[1] == reelState[2];
     }
@@ -97,11 +73,12 @@ public class Slot implements ICasinoGame {
      * @param cash current player's cash amount
      * @return cash amount after all rounds played or when all cash is gone
      */
-    private int playSlotRound(
+    private static int playSlotRound(
             final int round,
+            final int maxRounds,
             final int[] reelState,
             final int cash) {
-        if ((round >= this.maxRounds) || cash == 0) {
+        if ((round >= maxRounds) || cash == 0) {
             return cash;
         }
 
@@ -121,22 +98,28 @@ public class Slot implements ICasinoGame {
 
         final String roundMessage = isPlayerWin ? WIN_MESSAGE : LOOSE_MESSAGE;
         log.info("{}, Ваш капитал теперь составляет {}$", roundMessage, newCash);
-        return playSlotRound(round + 1, newReelsState, newCash);
+        return playSlotRound(round + 1, maxRounds, newReelsState, newCash);
     }
 
     /**
-     *  Start a game calling this method.
+     * @param cash cash size
+     * @param maxRounds max game rounds
+     * @return cash amount after playing @param maxRounds rounds
      */
-    public int play() {
+    private static int play(int cash, int maxRounds) {
         final int[] initReelsState = {0, 0, 0};
-        return playSlotRound(0, initReelsState, this.startCash);
+        return playSlotRound(0, maxRounds, initReelsState, cash);
     }
 
+    /**
+     * Play a single round game with @param cash
+     * @param cash cash amount
+     * @return new cash amount
+     */
     @Override
     public int playSingleRound(final int cash) {
-        this.startCash = cash;
-        this.maxRounds = 1;
-        return play();
+        final int rounds = 1;
+        return play(cash, rounds);
     }
 
     /**
@@ -144,10 +127,9 @@ public class Slot implements ICasinoGame {
      * @param __ param is not used
      */
     public static void main(final String... __) {
-        final int cash = 100;
-        final int maxRounds = 11;
-        Slot slotGame = new Slot(cash, maxRounds);
-        slotGame.play();
+        final int defaultCash = 100;
+        final int defaultMaxRounds = 11;
+        play(defaultCash, defaultMaxRounds);
     }
 
 }
