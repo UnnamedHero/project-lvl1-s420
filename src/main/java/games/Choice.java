@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 
 public class Choice {
 
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(Choice.class);
 
