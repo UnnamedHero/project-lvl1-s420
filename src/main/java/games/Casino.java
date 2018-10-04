@@ -24,9 +24,9 @@ public class Casino {
 
     private  ICasinoGame getGame() throws IOException{
         switch (Choice.getCharacterFromUser()) {
-            case '1': return new Slot(1);
-            case '2': return new Drunkard(2, 999);
-            case '3': return new BlackJack(1);
+            case '1': return new Slot();
+            case '2': return new Drunkard();
+            case '3': return new BlackJack();
             case '4':
             default: return null;
         }

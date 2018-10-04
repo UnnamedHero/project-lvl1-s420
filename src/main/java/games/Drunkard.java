@@ -6,30 +6,16 @@ import org.slf4j.Logger;
 
 public class Drunkard implements ICasinoGame {
 
-    private int playersCount;
-    private int rounds;
+    private static int playersCount;
+    private static final int MAX_TURNS_COUNT = 9999;
 
-    private int[] playersCardsBeginCursor;
-    private int[] playersCardsEndCursor;
-    private int[] playersCardsCount;
+    private static int[] playersCardsBeginCursor;
+    private static int[] playersCardsEndCursor;
+    private static int[] playersCardsCount;
 
-    private int[][] playersPacks;
+    private static int[][] playersPacks;
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(Drunkard.class);
-
-    /**
-     * @param players players count
-     * @param maxRounds max rounds to play
-     */
-    public Drunkard(final int players, final int maxRounds) {
-        this.playersCount = players;
-        this.rounds = maxRounds;
-        this.playersCardsBeginCursor = new int[players];
-        this.playersCardsEndCursor = new int[players];
-        this.playersCardsCount = new int[players];
-        this.playersPacks = new int[players][CardUtils.CARDS_TOTAL_COUNT];
-    }
-
 
     private static int comparePars(final CardUtils.Par card1, final CardUtils.Par card2) {
         if (card1 == CardUtils.Par.SIX && card2 == CardUtils.Par.ACE) {
@@ -42,20 +28,25 @@ public class Drunkard implements ICasinoGame {
         return Integer.compare(card1.ordinal(), card2.ordinal());
     }
 
-    private int getNextPlayerId(final int currentPlayerId) {
+    private static int getNextPlayerId(final int currentPlayerId) {
         return (currentPlayerId + 1) % playersCount;
     }
 
-    private void increasePlayerCardsCount(final int playerId) {
+    private static void increasePlayerCardsCount(final int playerId) {
         playersCardsCount[playerId] = playersCardsCount[playerId] + 1;
     }
 
-    private void degreasePlayerCardsCount(final int playerId) {
+    private static void degreasePlayerCardsCount(final int playerId) {
         playersCardsCount[playerId] = playersCardsCount[playerId] - 1;
     }
 
-    private void handOutPack() {
-        final int[] pack = CardUtils.makePack();
+    private static void handOutPack() {
+        playersCardsBeginCursor = new int[playersCount];
+        playersCardsEndCursor = new int[playersCount];
+        playersCardsCount = new int[playersCount];
+        playersPacks = new int[playersCount][CardUtils.CARDS_TOTAL_COUNT];
+
+        int[] pack = CardUtils.makePack();
         int currentPlayerId = 0;
 
         for (int playerId = 0; playerId < playersCount; playerId++) {
@@ -71,7 +62,7 @@ public class Drunkard implements ICasinoGame {
         }
     }
 
-    private int getPlayerCardsCount(final int playerId) {
+    private static int getPlayerCardsCount(final int playerId) {
         return playersCardsCount[playerId];
     }
 
@@ -96,7 +87,7 @@ public class Drunkard implements ICasinoGame {
         return (currentCursorPosition + 1) % CardUtils.CARDS_TOTAL_COUNT;
     }
 
-    private void addCardsToPlayer(final int playerId, final int... cards) {
+    private static void addCardsToPlayer(final int playerId, final int... cards) {
         int newEndCursorPosition = playersCardsEndCursor[playerId];
         for (int card: cards) {
             newEndCursorPosition = getNewCursorPosition(newEndCursorPosition);
@@ -107,7 +98,7 @@ public class Drunkard implements ICasinoGame {
     }
 
 
-    private int[] shiftFirstCards(final int[] playersInGame) {
+    private static int[] shiftFirstCards(final int[] playersInGame) {
         final int playersInGameCount = playersInGame.length;
         int[] firstCards = new int[playersInGameCount];
         for (int i = 0; i < playersInGameCount; i++) {
@@ -128,27 +119,26 @@ public class Drunkard implements ICasinoGame {
         return shiftedPlayersInGame;
     }
 
-    private void processTieResult(final int[] playersInGame, final int[] cards) {
+    private static void processTieResult(final int[] playersInGame, final int[] cards) {
         for (int i = 0; i < playersInGame.length; i++) {
             addCardsToPlayer(playersInGame[i], cards[i]);
         }
     }
 
-    private int playRound(final int[] playersInGame, final int currentRound) {
-
-        if (currentRound == this.rounds) {
-            log.info("Достигнуто максимальное количество раундов {}\n", currentRound);
+    private static int playGameTurn(final int[] playersInGame, final int currentTurn) {
+        if (currentTurn == MAX_TURNS_COUNT) {
+            log.info("Достигнуто максимальное количество ходов {}\n", currentTurn);
             return -1;
         }
 
         final int roundPlayersCount = playersInGame.length;
         if (roundPlayersCount == 1) {
             final int winnerId = playersInGame[0];
-            log.info("На {} раунде победил игрок {}!\n", currentRound, playersInGame[0] + 1);
+            log.info("На {} ходу победил игрок {}!\n", currentTurn, playersInGame[0] + 1);
             return winnerId;
         }
 
-        log.info("Раунд {}", currentRound + 1);
+        log.info("Ход {}", currentTurn + 1);
 
         int[] firstCards = shiftFirstCards(playersInGame);
         for (int i = 0; i < roundPlayersCount; i++) {
@@ -178,21 +168,24 @@ public class Drunkard implements ICasinoGame {
                 .filter(playerId -> getPlayerCardsCount(playerId) > 0)
                 .toArray();
 
-        return playRound(nextRoundPlayers, currentRound + 1);
+        return playGameTurn(nextRoundPlayers, currentTurn + 1);
     }
 
     /**
      *  call this method to start game.
      */
-    public int play() {
-        handOutPack();
+    private static int play(final int players) {
+        playersCount = players;
         int[] playersInGame = IntStream.rangeClosed(0, playersCount - 1).toArray();
-        return playRound(playersInGame, 0);
+        handOutPack();
+        return playGameTurn(playersInGame, 0);
     }
 
     @Override
     public int playSingleRound(final int cash) {
-        final int result = play();
+        final int defaultPlayers = 2;
+
+        final int result = play(defaultPlayers);
         switch (result) {
             case -1: return cash;
             case 0: return cash + 10;
@@ -201,7 +194,7 @@ public class Drunkard implements ICasinoGame {
     }
 
     public static void main(final String... __) {
-        Drunkard game = new Drunkard(2, 9999);
-        game.play();
+        final int defaultPlayers = 3;
+        play(defaultPlayers);
     }
 }
