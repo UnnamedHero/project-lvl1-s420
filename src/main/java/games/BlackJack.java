@@ -15,22 +15,13 @@ public class BlackJack implements ICasinoGame {
     private static final int PLAYER = 0;
     private static final int COMPUTER = 1;
 
-    private int[] pack;
-    private int packCursor;
+    private static int[] pack;
+    private static int packCursor;
 
-    private int[][] playersCards;
-    private int[] playersCursors;
+    private static int[][] playersCards;
+    private static int[] playersCursors;
 
-    private int[] playersMoney = {100, 100};
-
-    private int rounds;
-
-    /**
-     * @param maxRounds максимальное количество раундов
-     */
-    public BlackJack(final int maxRounds) {
-        this.rounds = maxRounds;
-    }
+    private static int[] playersMoney = { 0, 0 };
 
     private static boolean confirm(final String message) throws IOException {
         log.info("{} \"Y\" - Да, {любой другой символ} - нет (Что бы выйти из игры, нажмите Ctrl + C)", message);
@@ -41,19 +32,19 @@ public class BlackJack implements ICasinoGame {
         }
     }
 
-    private void shiftPackCursor() {
+    private static void shiftPackCursor() {
         packCursor += 1;
     }
 
-    private int getPlayerCursor(final int playerId) {
+    private static int getPlayerCursor(final int playerId) {
         return playersCursors[playerId];
     }
 
-    private void shiftPlayerCursor(final int playerId) {
+    private static void shiftPlayerCursor(final int playerId) {
         playersCursors[playerId] += 1;
     }
 
-    private void initRound() {
+    private static void initRound() {
         log.info("\n\nУ Вас {}$, у компьютера - {}$. Начинаем новый раунд!", playersMoney[0], playersMoney[1]);
         pack = CardUtils.makePack();
         packCursor = 0;
@@ -61,7 +52,7 @@ public class BlackJack implements ICasinoGame {
         playersCursors = new int[]{0, 0};
     }
 
-    private int getCardFromPack() {
+    private static int getCardFromPack() {
         if (packCursor == CardUtils.CARDS_TOTAL_COUNT) {
             log.info("В колоде не осталось карт. Как вы этого добились?");
             return -1;
@@ -71,7 +62,7 @@ public class BlackJack implements ICasinoGame {
         return card;
     }
 
-    private void addCardToPlayerPack(final int playerId, final int card) {
+    private static void addCardToPlayerPack(final int playerId, final int card) {
         final String playerName = playerId == PLAYER ? "Вам" : "Компьютеру";
         final int playersCursor = getPlayerCursor(playerId);
         log.info("{} выпала карта {}", playerName, CardUtils.toString(card));
@@ -79,11 +70,11 @@ public class BlackJack implements ICasinoGame {
         shiftPlayerCursor(playerId);
     }
 
-    private int getPlayerCard(final int playerId, final int cursor) {
+    private static int getPlayerCard(final int playerId, final int cursor) {
         return playersCards[playerId][cursor];
     }
 
-    private int getPlayerCardsSum(final int playerId) {
+    private static int getPlayerCardsSum(final int playerId) {
         final int cursor = getPlayerCursor(playerId);
         int sum = 0;
         for (int i = 0; i < cursor; i++) {
@@ -92,12 +83,12 @@ public class BlackJack implements ICasinoGame {
         return sum;
     }
 
-    private int getGameScore(final int playerId) {
+    private static int getGameScore(final int playerId) {
         final int sum = getPlayerCardsSum(playerId);
         return sum <= MAX_VALUE ? sum : 0;
     }
 
-    private void addCardsToPlayer(final int playerId, final int cardsAmount) {
+    private static void addCardsToPlayer(final int playerId, final int cardsAmount) {
         for (int i = 0; i < cardsAmount; i++) {
             final int card = getCardFromPack();
             addCardToPlayerPack(playerId, card);
@@ -119,7 +110,7 @@ public class BlackJack implements ICasinoGame {
          }
     }
 
-    private void makeComputerTurn() {
+    private static void makeComputerTurn() {
         Random r = new Random();
         final int safeScore = 14 + r.nextInt(5);
         addCardsToPlayer(COMPUTER, 2);
@@ -129,21 +120,21 @@ public class BlackJack implements ICasinoGame {
         }
     }
 
-    private void take10BucksFrom(final int playerId) {
+    private static void take10BucksFrom(final int playerId) {
         playersMoney[playerId] -= 10;
     }
 
-    private void add10BuckTo(final int playerId) {
+    private static void add10BuckTo(final int playerId) {
         playersMoney[playerId] += 10;
     }
 
-    private int getPlayerMoney(final int playerId) {
+    private static int getPlayerMoney(final int playerId) {
         return playersMoney[playerId];
     }
 
 
-    private int playRound(final int round) throws IOException {
-        if (round == this.rounds) {
+    private static int playRound(final int round, final int maxRounds) throws IOException {
+        if (round == maxRounds) {
             return getPlayerMoney(PLAYER);
         }
         if (getPlayerMoney(PLAYER) == 0) {
@@ -187,30 +178,28 @@ public class BlackJack implements ICasinoGame {
                 log.info("Ничья, каждый остаётся при своих");
                 break;
         }
-        return playRound(round + 1);
+        return playRound(round + 1, maxRounds);
     }
 
 
 
-    /**
-     * @throws IOException
-     * Запустите этот метод, чтобы начать игру.
-     */
-    public int play() throws IOException {
-        return playRound(0);
+    private static int play(final int maxRounds, final int playersCash) throws IOException {
+        playersMoney[PLAYER] = playersCash;
+        playersMoney[COMPUTER] = 100;
+        return playRound(0, maxRounds);
     }
 
     public static void main(final String... __) throws IOException {
-        final BlackJack game = new BlackJack(100);
-        game.play();
+        final int defaultMaxRounds = 100;
+        final int defaultPlayersCash = 100;
+        play(defaultMaxRounds, defaultPlayersCash);
     }
 
     @Override
     public int playSingleRound(int cash) {
+        final int rounds = 1;
         try {
-            playersMoney[PLAYER] = cash;
-            playersMoney[COMPUTER] = 10;
-            return play();
+            return play(rounds, cash);
         } catch (IOException e) {
             return cash;
         }
